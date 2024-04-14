@@ -1,0 +1,37 @@
+{
+  "name": "piglinproliferation:traveller_camp_start_pool",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "piglinproliferation:exclusive_list_pool_element",
+        "projection": "rigid",
+        "elements": [
+          {
+            "element": {
+              "location": "piglinproliferation:traveller_camp/hangout",
+              "processors": "minecraft:empty",
+              "projection": "rigid",
+              "element_type": "minecraft:single_pool_element"
+            },
+            "conditions": [
+              {
+                "type": "piglinproliferation:valid_biomes",
+                "biomes": "#piglinproliferation:traveller_camp_has_hangout"
+              }
+            ]
+          },
+          {
+            "element": {
+              "location": "piglinproliferation:traveller_camp/standalone",
+              "processors": "minecraft:empty",
+              "projection": "rigid",
+              "element_type": "minecraft:single_pool_element"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

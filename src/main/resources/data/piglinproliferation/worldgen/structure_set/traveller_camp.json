@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "piglinproliferation:traveller_camp",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 121541697,
+    "spacing": 12,
+    "separation": 6,
+    "type": "minecraft:random_spread",
+    "preferred_biomes": "#piglinprolieration:traveller_camp_has_hangout"
+  }
+}

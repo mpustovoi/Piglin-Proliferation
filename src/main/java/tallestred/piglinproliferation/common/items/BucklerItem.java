@@ -50,8 +50,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static tallestred.piglinproliferation.CodeUtilities.doubleToString;
-import static tallestred.piglinproliferation.CodeUtilities.ticksToSeconds;
+import static tallestred.piglinproliferation.util.CodeUtilities.doubleToString;
+import static tallestred.piglinproliferation.util.CodeUtilities.ticksToSeconds;
 
 public class BucklerItem extends ShieldItem {
     public static final AttributeModifierHolder CHARGE_SPEED_BOOST = new AttributeModifierHolder(Attributes.MOVEMENT_SPEED, UUID.fromString("A2F995E8-B25A-4883-B9D0-93A676DC4045"), "Charge speed boost", 9, AttributeModifier.Operation.MULTIPLY_BASE);

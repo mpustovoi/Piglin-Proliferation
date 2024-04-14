@@ -2,6 +2,6 @@
   "replace": "false",
   "values": [
     "minecraft:nether_fossil",
-    "#piglinproliferation:traveller_bases"
+    "piglinproliferation:traveller_camp"
   ]
 }

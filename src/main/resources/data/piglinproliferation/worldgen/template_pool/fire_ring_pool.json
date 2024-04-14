@@ -1,0 +1,37 @@
+{
+  "name": "piglinproliferation:fire_ring_pool",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "piglinproliferation:exclusive_list_pool_element",
+        "projection": "rigid",
+        "elements": [
+          {
+            "element": {
+              "element_type": "minecraft:single_pool_element",
+              "projection": "rigid",
+              "location": "piglinproliferation:traveller_camp/soul_fire_ring",
+              "processors": "minecraft:empty"
+            },
+            "conditions": [
+              {
+                "type": "piglinproliferation:valid_biomes",
+                "biomes": "#piglinproliferation:traveller_camp_uses_soul_campfire"
+              }
+            ]
+          },
+          {
+            "element": {
+              "element_type": "minecraft:single_pool_element",
+              "projection": "rigid",
+              "location": "piglinproliferation:traveller_camp/fire_ring",
+              "processors": "minecraft:empty"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

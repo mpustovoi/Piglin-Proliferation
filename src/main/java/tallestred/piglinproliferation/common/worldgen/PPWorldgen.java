@@ -1,10 +1,13 @@
 package tallestred.piglinproliferation.common.worldgen;
 
 import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -13,18 +16,19 @@ import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import tallestred.piglinproliferation.PiglinProliferation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PPWorldgen {
     private static final ResourceKey<StructureProcessorList> EMPTY_PROCESSOR_LIST_KEY = ResourceKey.create(
@@ -32,11 +36,38 @@ public class PPWorldgen {
     public static DeferredRegister<StructureType<?>> STRUCTURE_TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, PiglinProliferation.MODID);
     public static DeferredHolder<StructureType<?>, StructureType<CustomJigsawStructure>> CUSTOM_JIGSAW = STRUCTURE_TYPES.register("custom_jigsaw", () -> () -> CustomJigsawStructure.CODEC);
 
+    public static DeferredRegister<StructurePoolElementType<?>> STRUCTURE_POOL_ELEMENTS = DeferredRegister.create(Registries.STRUCTURE_POOL_ELEMENT, PiglinProliferation.MODID);
+    public static DeferredHolder<StructurePoolElementType<?>, StructurePoolElementType<ExclusiveListPoolElement>> EXCLUSIVE_LIST_POOL_ELEMENT = STRUCTURE_POOL_ELEMENTS.register("exclusive_list_pool_element", () -> () -> ExclusiveListPoolElement.CODEC);
+
+    public static Map<ResourceLocation, ListPoolElementCondition.Type> LIST_POOL_ELEMENT_CONDITIONS = Collections.synchronizedMap(new HashMap<>());
+    public static ListPoolElementCondition.Type VALID_BIOMES_CONDITION = registerListPoolElementCondition("valid_biomes", ValidBiomesCondition.CODEC);
+
+    public static DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(BuiltInRegistries.FEATURE, PiglinProliferation.MODID);
+    public static DeferredHolder<Feature<?>, PiglinTravellerFeature> PIGLIN_TRAVELLER_FEATURE = FEATURES.register("piglin_traveller", PiglinTravellerFeature::new);
+
+    public static Codec<ListPoolElementCondition> LIST_POOL_ELEMENT_CODEC = ResourceLocation.CODEC.flatXmap(location -> {
+                return Optional.ofNullable(LIST_POOL_ELEMENT_CONDITIONS.get(location)).map(DataResult::success).orElseGet(() -> {
+                    return DataResult.error(() -> "Resource location not found in Piglin Proliferation's list pool element conditions map");
+                });
+            }, codec -> {
+                return LIST_POOL_ELEMENT_CONDITIONS.entrySet().stream().filter(e -> codec.equals(e.getValue())).map(Map.Entry::getKey).findFirst().map(DataResult::success).orElseGet(() -> {
+                    return DataResult.error(() -> "Resource location not found in Piglin Proliferation's list pool element conditions map");
+                });
+            }
+    ).dispatch("type", ListPoolElementCondition::type, ListPoolElementCondition.Type::codec);
+
+    @SuppressWarnings("SameParameterValue")
+    private static ListPoolElementCondition.Type registerListPoolElementCondition(String location, Codec<? extends ListPoolElementCondition> codec) {
+         return LIST_POOL_ELEMENT_CONDITIONS.put(new ResourceLocation(PiglinProliferation.MODID, location), new ListPoolElementCondition.Type(codec));
+    }
+
     /**
+     *
+     *
      * Adds the building to the targeted pool.
      * <p>
      * used from <a href="https://gist.github.com/TelepathicGrunt/4fdbc445ebcbcbeb43ac748f4b18f342">https://gist.github.com/TelepathicGrunt/4fdbc445ebcbcbeb43ac748f4b18f342</a>
-     * Note: This is an additive operation which means multiple mods can do this and they stack with each other safely.
+     * Note: This is an additive operation which means multiple mods can do this, and they stack with each other safely.
      */
     public static void addBuildingToPool(Registry<StructureTemplatePool> templatePoolRegistry,
                                          Registry<StructureProcessorList> processorListRegistry,
