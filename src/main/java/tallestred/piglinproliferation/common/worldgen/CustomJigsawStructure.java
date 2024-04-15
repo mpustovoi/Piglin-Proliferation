@@ -1,13 +1,18 @@
 package tallestred.piglinproliferation.common.worldgen;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
+import net.minecraft.core.*;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.Pools;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
@@ -18,9 +23,10 @@ import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import org.slf4j.Logger;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Copied from vanilla {@link net.minecraft.world.level.levelgen.structure.structures.JigsawStructure}
@@ -43,6 +49,7 @@ public class CustomJigsawStructure extends Structure {
             return structure.maxDistanceFromCenter;
         }), Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter(p_307187_ -> p_307187_.poolAliases)).apply(kind, CustomJigsawStructure::new);
     }), CustomJigsawStructure::verifyRange).codec();
+    static final Logger LOGGER = LogUtils.getLogger();
     private final Holder<StructureTemplatePool> startPool;
     private final Optional<ResourceLocation> startJigsawName;
     private final int maxDepth;
@@ -81,15 +88,19 @@ public class CustomJigsawStructure extends Structure {
         this(pSettings, startPool, Optional.empty(), maxDepth, startHeight, useExpansionHack, Optional.empty(), 80,  List.of());
     }
 
+    @Override
     public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext context) {
         ChunkPos chunkpos = context.chunkPos();
         BlockPos highLand = PPWorldgen.getHighestLand(context.chunkGenerator(), context.randomState(), new BoundingBox(new BlockPos(chunkpos.getMinBlockX(), this.startHeight.sample(context.random(), new WorldGenerationContext(context.chunkGenerator(), context.heightAccessor())), chunkpos.getMinBlockZ())), context.heightAccessor());
         if (highLand == null)
             return Optional.empty();
         BlockPos blockPos = new BlockPos(chunkpos.getMinBlockX(), highLand.getY(), chunkpos.getMinBlockZ());
-        return JigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, PoolAliasLookup.create(this.poolAliases, blockPos, context.seed()));
+        PoolAliasLookup lookup = PoolAliasLookup.create(this.poolAliases, blockPos, context.seed());
+        StructureTemplatePool structuretemplatepool = this.startPool.unwrapKey().flatMap((key) -> context.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL).getOptional(lookup.lookup(key))).orElse(this.startPool.value());
+        if (structuretemplatepool.getRandomTemplate(context.random()) instanceof ExclusiveListPoolElement element) //Annoying hack
+            element.setElement(context, blockPos);
+        return CustomJigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, lookup);
     }
-
 
     public StructureType<?> type() {
         return PPWorldgen.CUSTOM_JIGSAW.get();

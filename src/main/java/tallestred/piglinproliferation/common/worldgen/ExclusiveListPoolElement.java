@@ -9,9 +9,11 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.ListPoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.*;
@@ -24,6 +26,7 @@ public class ExclusiveListPoolElement extends ListPoolElement {
     });
 
     public final List<ElementWithConditions> elementsWithConditions;
+    private StructurePoolElement selectedElement;
 
     public ExclusiveListPoolElement(List<ElementWithConditions> elementsWithConditions, StructureTemplatePool.Projection projection) {
         super(elementsWithConditions.stream().map(ElementWithConditions::element).toList(), projection);
@@ -32,13 +35,22 @@ public class ExclusiveListPoolElement extends ListPoolElement {
 
     @Override
     public boolean place(StructureTemplateManager templateManager, WorldGenLevel worldGenLevel, StructureManager manager, ChunkGenerator generator, BlockPos pos1, BlockPos pos2, Rotation rotation, BoundingBox box, RandomSource random, boolean bool) {
+        return this.selectedElement != null && this.selectedElement.place(templateManager, worldGenLevel, manager, generator, pos1, pos2, rotation, box, random, bool);
+    }
+
+    @Override
+    public List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager templateManager, BlockPos pos, Rotation rotation, RandomSource random) {
+        List<StructureTemplate.StructureBlockInfo> list = new ArrayList<>();
+        if (selectedElement != null)
+            list = selectedElement.getShuffledJigsawBlocks(templateManager, pos, rotation, random);
+        return list;
+    }
+
+    public void setElement(Structure.GenerationContext context, BlockPos pos) {
         for (ElementWithConditions entry : elementsWithConditions) {
-            if (entry.conditions.isEmpty() || entry.conditions.stream().allMatch(c -> c.test(templateManager, worldGenLevel, manager, generator, pos1, pos2, rotation, box, random, bool))) {
-                entry.element.place(templateManager, worldGenLevel, manager, generator, pos1, pos2, rotation, box, random, bool);
-                return true;
-            }
+            if (entry.conditions().isEmpty() || entry.conditions().stream().allMatch(c -> c.test(context, pos)))
+                selectedElement = entry.element;
         }
-        return false;
     }
 
     public record ElementWithConditions(StructurePoolElement element, List<ListPoolElementCondition> conditions) {

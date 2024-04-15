@@ -11,6 +11,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ValidBiomesCondition extends ListPoolElementCondition {
@@ -25,8 +26,8 @@ public class ValidBiomesCondition extends ListPoolElementCondition {
     }
 
     @Override
-    public boolean test(StructureTemplateManager templateManager, WorldGenLevel worldGenLevel, StructureManager manager, ChunkGenerator generator, BlockPos pos1, BlockPos pos2, Rotation rotation, BoundingBox box, RandomSource random, boolean bool) {
-        return biomes.contains(worldGenLevel.getBiome(pos1));
+    public boolean test(Structure.GenerationContext context, BlockPos pos) {
+        return biomes.contains(context.biomeSource().getNoiseBiome(pos.getX(), pos.getY(), pos.getZ(), context.randomState().sampler()));
     }
 
     @Override
