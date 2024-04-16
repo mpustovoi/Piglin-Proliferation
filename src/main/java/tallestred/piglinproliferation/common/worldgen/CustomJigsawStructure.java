@@ -20,6 +20,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
@@ -97,9 +98,10 @@ public class CustomJigsawStructure extends Structure {
         BlockPos blockPos = new BlockPos(chunkpos.getMinBlockX(), highLand.getY(), chunkpos.getMinBlockZ());
         PoolAliasLookup lookup = PoolAliasLookup.create(this.poolAliases, blockPos, context.seed());
         StructureTemplatePool structuretemplatepool = this.startPool.unwrapKey().flatMap((key) -> context.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL).getOptional(lookup.lookup(key))).orElse(this.startPool.value());
-        if (structuretemplatepool.getRandomTemplate(context.random()) instanceof ExclusiveListPoolElement element) //Annoying hack
-            element.setElement(context, blockPos);
-        return CustomJigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, lookup);
+        for (StructurePoolElement template : structuretemplatepool.templates)
+            if (template instanceof ExclusiveListPoolElement element)
+                element.addContext(context, blockPos); //Annoying hack
+        return JigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, lookup);
     }
 
     public StructureType<?> type() {

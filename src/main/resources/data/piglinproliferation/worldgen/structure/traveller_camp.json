@@ -16,5 +16,5 @@
   "start_pool": "piglinproliferation:traveller_camp_start_pool",
   "step": "vegetal_decoration",
   "use_expansion_hack": false,
-  "terrain_adaptation": "beard_box"
+  "terrain_adaptation": "beard_thin"
 }

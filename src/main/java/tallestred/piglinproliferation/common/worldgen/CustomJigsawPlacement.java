@@ -163,8 +163,8 @@ public class CustomJigsawPlacement {
             WorldgenRandom p_227253_,
             Structure.GenerationContext context
     ) {
-        if (p_227248_ instanceof ExclusiveListPoolElement element)
-            element.setElement(context, p_227250_);
+        /*if (p_227248_ instanceof ExclusiveListPoolElement element)
+            element.setElement(context, p_227250_);*/
         List<StructureTemplate.StructureBlockInfo> list = p_227248_.getShuffledJigsawBlocks(p_227252_, p_227250_, p_227251_, p_227253_);
         Optional<BlockPos> optional = Optional.empty();
 
@@ -290,9 +290,8 @@ public class CustomJigsawPlacement {
             MutableObject<VoxelShape> mutableobject = new MutableObject<>();
             BoundingBox boundingbox = p_227265_.getBoundingBox();
             int i = boundingbox.minY();
-
-            if (structurepoolelement instanceof ExclusiveListPoolElement element)
-                element.setElement(context, blockpos);
+            /*if (structurepoolelement instanceof ExclusiveListPoolElement element)
+                element.setElement(context, blockpos);*/
             label134:
             for(StructureTemplate.StructureBlockInfo structuretemplate$structureblockinfo : structurepoolelement.getShuffledJigsawBlocks(
                     this.structureTemplateManager, blockpos, rotation, this.random
@@ -346,9 +345,9 @@ public class CustomJigsawPlacement {
                                 }
 
                                 for(Rotation rotation1 : Rotation.getShuffled(this.random)) {
-                                    if (structurepoolelement1 instanceof ExclusiveListPoolElement element)
+                                    /*if (structurepoolelement1 instanceof ExclusiveListPoolElement element)
                                         element.setElement(context, blockpos1); //TODO check this
-                                    List<StructureTemplate.StructureBlockInfo> list1 = structurepoolelement1.getShuffledJigsawBlocks(
+                                    */List<StructureTemplate.StructureBlockInfo> list1 = structurepoolelement1.getShuffledJigsawBlocks(
                                             this.structureTemplateManager, BlockPos.ZERO, rotation1, this.random
                                     );
                                     BoundingBox boundingbox1 = structurepoolelement1.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, rotation1);
