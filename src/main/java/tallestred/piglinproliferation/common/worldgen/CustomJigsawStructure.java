@@ -27,6 +27,7 @@ import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.slf4j.Logger;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 
 /**
@@ -92,16 +93,14 @@ public class CustomJigsawStructure extends Structure {
     @Override
     public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext context) {
         ChunkPos chunkpos = context.chunkPos();
+        int yValue;
         BlockPos highLand = PPWorldgen.getHighestLand(context.chunkGenerator(), context.randomState(), new BoundingBox(new BlockPos(chunkpos.getMinBlockX(), this.startHeight.sample(context.random(), new WorldGenerationContext(context.chunkGenerator(), context.heightAccessor())), chunkpos.getMinBlockZ())), context.heightAccessor());
         if (highLand == null)
             return Optional.empty();
-        BlockPos blockPos = new BlockPos(chunkpos.getMinBlockX(), highLand.getY(), chunkpos.getMinBlockZ());
+        yValue = highLand.getY();
+        BlockPos blockPos = new BlockPos(chunkpos.getMinBlockX(), yValue, chunkpos.getMinBlockZ());
         PoolAliasLookup lookup = PoolAliasLookup.create(this.poolAliases, blockPos, context.seed());
-        StructureTemplatePool structuretemplatepool = this.startPool.unwrapKey().flatMap((key) -> context.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL).getOptional(lookup.lookup(key))).orElse(this.startPool.value());
-        for (StructurePoolElement template : structuretemplatepool.templates)
-            if (template instanceof ExclusiveListPoolElement element)
-                element.addContext(context, blockPos); //Annoying hack
-        return JigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, lookup);
+        return CustomJigsawPlacement.addPieces(context, this.startPool, this.startJigsawName, this.maxDepth, blockPos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter, lookup);
     }
 
     public StructureType<?> type() {

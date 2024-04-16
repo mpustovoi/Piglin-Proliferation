@@ -6,9 +6,9 @@
   "mixins": [
     "LookControllerMixin",
     "MovementControllerMixin",
+    "NetherForestVegetationFeatureMixin",
     "NoteBlockMixin",
-    "PiglinBruteBrainMixin",
-    "NetherForestVegetationFeatureMixin"
+    "PiglinBruteBrainMixin"
   ],
   "client": [
     "HumanoidModelMixin",
